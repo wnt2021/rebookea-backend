@@ -15,9 +15,22 @@ const app = express();
 app.use(express.json());
 app.use("/uploads", express.static(path.resolve("uploads")));
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://rebookea-frontend.vercel.app",
+];
+
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://rebookea-frontend.vercel.app"],
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
+
+app.options(
+  "*",
+  cors({
+    origin: allowedOrigins,
     credentials: true,
   })
 );
