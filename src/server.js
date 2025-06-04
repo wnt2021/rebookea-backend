@@ -17,7 +17,7 @@ app.use("/uploads", express.static(path.resolve("uploads")));
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://rebookea-frontend.vercel.app"],
     credentials: true,
   })
 );
