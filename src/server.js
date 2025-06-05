@@ -27,14 +27,6 @@ app.use(
   })
 );
 
-app.options(
-  "*",
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
-
 app.use(cookieParser());
 
 app.use("/api", userRoutes);
