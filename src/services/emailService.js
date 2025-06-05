@@ -118,7 +118,7 @@ const recoverEmailHtml = (name) => {
         Ha indicado que ha olvidado la contraseña para acceder a su cuenta de <strong>Rebookea</strong>. Por favor, haga clic en el botón para recuperar su contraseña.
       </p>
       <div class="button-container">
-        <a class="button" href="http://localhost:5173/reset">Resetear Contraseña</button>
+        <a class="button" href="https://rebookea-frontend.vercel.app/reset">Resetear Contraseña</button>
       </div>
       <div class="footer">
         Este es un correo automático no es necesario contestar.
