@@ -1,26 +1,37 @@
 import Book from "../models/Book.js";
 import multer from "multer";
+import streamifier from "streamifier";
+import cloudinary from "../config/cloudinary.js";
 
-const storage = multer.diskStorage({
-  destination: "./uploads/",
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
+const storage = multer.memoryStorage();
 
 export const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
+const uploadToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream((error, result) => {
+      if (result) resolve(result);
+      else reject(error);
+    });
+    streamifier.createReadStream(fileBuffer).pipe(stream);
+  });
+};
+
 const save = async (req, res) => {
   const { title, description, price, category } = req.body;
   const bookPrice = parseFloat(price);
-  const image = req.file ? req.file.filename : null;
   const { id } = req.params;
   const state = "list";
 
   try {
+    let image = null;
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      image = result.secure_url;
+    }
     const newBook = new Book({
       userId: id,
       title,
@@ -89,15 +100,28 @@ const deleteBook = async (req, res) => {
 const updateBook = async (req, res) => {
   const { id } = req.params;
   const { title, description, price, category } = req.body;
-  const image = req.file ? req.file.filename : undefined;
+  let image;
 
   try {
-    const updateBooks = await Book.findByIdAndUpdate(
-      { _id: id },
-      { title, description, image, price, category },
-      { new: true }
-    );
-    res.status(200).json({ success: true, books: updateBooks });
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      image = result.secure_url;
+    }
+
+    const updateFields = {
+      title,
+      description,
+      price: parseFloat(price),
+      category,
+    };
+
+    if (image) {
+      updateFields.image = image;
+    }
+    const updatedBooks = await Book.findByIdAndUpdate(id, updateFields, {
+      new: true,
+    });
+    res.status(200).json({ success: true, books: updatedBooks });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
